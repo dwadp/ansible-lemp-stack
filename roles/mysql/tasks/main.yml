@@ -3,12 +3,12 @@
 
 - name: Install MySQL 5.7
   become: true
-  import_tasks: install-57.yml
+  import_tasks: install-57-debian.yml
   when: mysql_version == '5.7' and ansible_os_family == 'Debian'
 
 - name: Install MySQL 8.0
   become: true
-  import_tasks: install-80.yml
+  import_tasks: install-80-debian.yml
   when: mysql_version == '8.0' and ansible_os_family == 'Debian'
 
 - name: Install necessary mysql packages
