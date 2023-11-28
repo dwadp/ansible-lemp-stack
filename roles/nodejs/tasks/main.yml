@@ -1,0 +1,4 @@
+- name: Setup NodeJS {{ nodejs_version }}.x on Debian
+  become: true
+  import_tasks: setup-debian.yml
+  when: nodejs|bool == true and ansible_os_family == 'Debian'

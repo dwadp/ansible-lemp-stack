@@ -1,0 +1,6 @@
+- name: Install MySQL 8.0
+  apt:
+    update_cache: yes
+    pkg:
+      - mysql-server=8.*
+    state: present

@@ -1,0 +1,10 @@
+---
+- name: Setup LEMP stack
+  hosts: all
+  become: true
+  roles:
+    # - php
+    # - nginx
+    # - mysql
+    # - supervisor
+    - nodejs

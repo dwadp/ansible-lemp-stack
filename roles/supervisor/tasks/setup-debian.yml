@@ -1,0 +1,28 @@
+- name: Installing supervisor
+  apt:
+    pkg: supervisor
+    update_cache: yes
+
+- name: Ensure Supervisor is enabled to run on startup  
+  service: name=supervisor state=started enabled=true
+
+- name: Copy the supervisor.conf.j2 to the default supervisor configuration 
+  template:
+    src: supervisord.conf.j2
+    dest: /etc/supervisor/supervisord.conf
+
+- name: Ensure group "supervisor" exists
+  ansible.builtin.group:
+    name: supervisor
+    state: present
+
+- name: Add the current user & root user to 'supervisor' group
+  ansible.builtin.user:
+    name: "{{ item }}"
+    shell: "{{ ansible_user_shell }}"
+    groups: supervisor
+    append: yes
+  with_items: "{{ supervisor_users }}"
+
+- name: Restart Supervisor
+  service: name=supervisor state=restarted enabled=yes

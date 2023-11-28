@@ -1,0 +1,16 @@
+project_domain: project.test
+project_name: project
+php_version: 8.1
+
+mysql_version: '8.0'
+mysql_root_home: /root
+mysql_root_username: root
+mysql_root_password: password
+
+supervisor: yes
+supervisor_users:
+  - root
+  - vagrant
+
+nodejs: yes
+nodejs_version: 18

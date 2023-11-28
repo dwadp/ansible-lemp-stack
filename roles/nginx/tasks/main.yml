@@ -1,0 +1,48 @@
+- name: "Remove existing apache2"
+  when: ansible_os_family == "Debian"
+  apt:
+    name: apache2
+    state: absent
+    purge: true
+    autoremove: true
+    clean: true
+
+- name: "Update apt cache"
+  when: ansible_os_family == "Debian"
+  apt: update_cache=yes
+
+- name: "Install nginx"
+  when: ansible_os_family == "Debian"
+  apt: name=nginx state=present
+
+- name: "Copy nginx configuration file"
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+
+- name: "Create project root directory"
+  file:
+    path: /var/www/html/{{ project_name }}
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: 0775
+
+- name: "Copy default index.php file"
+  template:
+    src: "index.php.j2"
+    dest: "/var/www/html/{{ project_name }}/index.php"
+
+- name: Replace default nginx virtual host configuration
+  template:
+    src: "default.j2"
+    dest: "/etc/nginx/sites-available/default"
+
+- name: Enable the new default virtual host configuration
+  file:
+    src: "/etc/nginx/sites-available/default"
+    dest: "/etc/nginx/sites-enabled/default"
+    state: link
+  notify:
+    - Reload Nginx
+    - Restart Nginx

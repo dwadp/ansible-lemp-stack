@@ -1,0 +1,3 @@
+- name: Restart PHP-FPM
+  when: ansible_os_family == "Debian"
+  service: name=php{{ php_version }}-fpm state=restarted enabled=yes

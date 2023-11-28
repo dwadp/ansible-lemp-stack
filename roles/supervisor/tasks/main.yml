@@ -1,0 +1,4 @@
+- name: Install supervisor
+  become: true
+  when: supervisor|bool == true and ansible_os_family == 'Debian'
+  import_tasks: setup-debian.yml

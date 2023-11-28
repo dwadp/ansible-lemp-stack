@@ -1,0 +1,34 @@
+- name: Check if setup script already exists
+  stat:
+    path: /tmp/nodesource_setup.sh
+  register: setup_script
+
+- name: Check if NodeJS {{ nodejs_version }}.x already installed
+  command: node -v
+  failed_when: false
+  register: nodejs_installed
+
+- name: Is NodeJS installed?
+  debug:
+    msg: "NodeJS {{ nodejs_installed.stdout_lines[0] }} is installed. Skipping!"
+  when: nodejs_installed.rc == 0
+
+- name: Get the setup script
+  command: "curl -sL https://deb.nodesource.com/setup_{{ nodejs_version }}.x -o /tmp/nodesource_setup.sh"
+  when: nodejs_installed.rc != 0 and not setup_script.stat.exists
+
+- name: Execute the nodesource_setup.sh script
+  command: "{{ ansible_env.SHELL }} /tmp/nodesource_setup.sh"
+  when: nodejs_installed.rc != 0 and setup_script.stat.exists
+
+- name: Install NodeJS {{ nodejs_version }}.x
+  when: nodejs_installed.rc != 0
+  apt:
+    pkg: nodejs
+    update_cache: yes
+
+- name: Cleanup setup script
+  when: setup_script.stat.exists
+  file:
+    path: "/tmp/nodesource_setup.sh"
+    state: absent

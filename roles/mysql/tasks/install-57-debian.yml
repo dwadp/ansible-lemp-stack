@@ -1,0 +1,39 @@
+- name: Download MySQL APT Repository Setup
+  shell: "curl -SLo /tmp/mysql-apt-config_0.8.28-1_all.deb https://dev.mysql.com/get/mysql-apt-config_0.8.28-1_all.deb"
+
+- name: Select OS Version
+  shell: echo mysql-apt-config mysql-apt-config/repo-codename select bionic | debconf-set-selections;
+
+- name: Select MySQL Version
+  shell: echo mysql-apt-config mysql-apt-config/select-server select mysql-{{ mysql_version }} | debconf-set-selections;
+
+- name: Select MySQL Tools
+  shell: echo mysql-apt-config mysql-apt-config/select-tools select Enabled | debconf-set-selections;
+
+- name: Select MySQL Preview
+  shell: echo mysql-apt-config mysql-apt-config/select-preview select Disabled | debconf-set-selections;
+
+- name: Select Product OK
+  shell: echo mysql-apt-config mysql-apt-config/select-product select Ok | debconf-set-selections;
+
+- name: Install MySQL APT Config
+  shell: dpkg -i /tmp/mysql-apt-config_0.8.28-1_all.deb
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  register: res_apt
+
+- name: Update APT packages
+  apt:
+    update_cache: yes
+
+- name: Install MySQL Community Server & Client version 5.7
+  apt:
+    pkg:
+      - mysql-client=5.7.*
+      - mysql-community-server=5.7.*
+    state: present
+
+- name: Cleanup installation files
+  file:
+    path: /tmp/mysql-apt-config_0.8.28-1_all.deb
+    state: absent
