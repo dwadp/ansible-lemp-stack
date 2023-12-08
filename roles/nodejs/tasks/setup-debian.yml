@@ -1,34 +1,45 @@
-- name: Check if setup script already exists
+- name: Install necessary packages
+  apt:
+    update_cache: yes
+    pkg:
+      - ca-certificates
+      - curl
+      - gnupg
+
+- name: Check if gpg key already exists
   stat:
-    path: /tmp/nodesource_setup.sh
-  register: setup_script
+    path: /etc/apt/keyrings/nodesource.gpg
+  register: gpg_key
+
+- name: Create keyrings directory
+  when: not gpg_key.stat.exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+
+- name: Download and import the Nodesource GPG key
+  when: not gpg_key.stat.exists
+  shell: curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+- name: Check if sourcelist exists
+  stat:
+    path: /etc/apt/sources.list.d/nodesource.list
+  register: nodesource_list
+
+- name: Create deb repository
+  when: not nodesource_list.stat.exists
+  shell: |
+    NODE_MAJOR={{ nodejs_version }}
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 
 - name: Check if NodeJS {{ nodejs_version }}.x already installed
   command: node -v
   failed_when: false
   register: nodejs_installed
 
-- name: Is NodeJS installed?
-  debug:
-    msg: "NodeJS {{ nodejs_installed.stdout_lines[0] }} is installed. Skipping!"
-  when: nodejs_installed.rc == 0
-
-- name: Get the setup script
-  command: "curl -sL https://deb.nodesource.com/setup_{{ nodejs_version }}.x -o /tmp/nodesource_setup.sh"
-  when: nodejs_installed.rc != 0 and not setup_script.stat.exists
-
-- name: Execute the nodesource_setup.sh script
-  command: "{{ ansible_env.SHELL }} /tmp/nodesource_setup.sh"
-  when: nodejs_installed.rc != 0 and setup_script.stat.exists
-
-- name: Install NodeJS {{ nodejs_version }}.x
+- name: Install NodeJS {{ nodejs_version }}
   when: nodejs_installed.rc != 0
   apt:
-    pkg: nodejs
     update_cache: yes
-
-- name: Cleanup setup script
-  when: setup_script.stat.exists
-  file:
-    path: "/tmp/nodesource_setup.sh"
-    state: absent
+    pkg:
+      - nodejs
