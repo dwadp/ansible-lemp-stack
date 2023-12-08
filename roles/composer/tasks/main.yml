@@ -1,0 +1,29 @@
+- name: Check if PHP already installed
+  command: php -v
+  failed_when: false
+  register: php_installed
+
+- name: Check if composer already installed
+  stat:
+    path: /usr/local/bin/composer
+  register: composer_installed
+
+- name: Get composer-setup.php script
+  when: not composer_installed.stat.exists and php_installed.rc == 0
+  shell: php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+
+- name: Verify composer-setup.php script
+  when: not composer_installed.stat.exists and php_installed.rc == 0
+  shell: php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+
+- name: Execute composer-setup.php script
+  when: not composer_installed.stat.exists and php_installed.rc == 0
+  shell: php composer-setup.php
+
+- name: Delete composer-setup.php script
+  when: not composer_installed.stat.exists and php_installed.rc == 0
+  shell: php -r "unlink('composer-setup.php');"
+
+- name: Move composer.phar to standard binary folder
+  when: not composer_installed.stat.exists
+  shell: mv composer.phar /usr/local/bin/composer
