@@ -5,6 +5,7 @@
   roles:
     - setup-user
     - php
+    - composer
     - nginx
     - mysql
     - supervisor
