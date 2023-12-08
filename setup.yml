@@ -3,8 +3,9 @@
   hosts: all
   become: true
   roles:
-    # - php
-    # - nginx
-    # - mysql
-    # - supervisor
+    - setup-user
+    - php
+    - nginx
+    - mysql
+    - supervisor
     - nodejs

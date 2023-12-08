@@ -1,0 +1,13 @@
+- name: "Remove existing apache2"
+  apt:
+    name: apache2
+    state: absent
+    purge: true
+    autoremove: true
+    clean: true
+
+- name: "Update apt cache"
+  apt: update_cache=yes
+
+- name: "Install nginx"
+  apt: name=nginx state=present

@@ -1,19 +1,10 @@
-- name: "Remove existing apache2"
+- name: Setup nginx on debian
+  import_tasks: setup-debian.yml
   when: ansible_os_family == "Debian"
-  apt:
-    name: apache2
-    state: absent
-    purge: true
-    autoremove: true
-    clean: true
 
-- name: "Update apt cache"
-  when: ansible_os_family == "Debian"
-  apt: update_cache=yes
-
-- name: "Install nginx"
-  when: ansible_os_family == "Debian"
-  apt: name=nginx state=present
+- name: Setup nginx on redhat family
+  import_tasks: setup-redhat.yml
+  when: ansible_os_family in ["RedHat", "Rocky"]
 
 - name: "Copy nginx configuration file"
   copy:
@@ -43,6 +34,9 @@
     src: "/etc/nginx/sites-available/default"
     dest: "/etc/nginx/sites-enabled/default"
     state: link
-  notify:
-    - Reload Nginx
-    - Restart Nginx
+
+- name: Restart Nginx
+  systemd_service:
+    name: nginx
+    enabled: true
+    state: restarted

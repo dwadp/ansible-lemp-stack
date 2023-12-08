@@ -1,0 +1,14 @@
+- name: Create web user group
+  group:
+    name: "{{ web_user }}"
+    system: true
+    state: present
+
+- name: Create web user
+  user:
+    name: "{{ web_user }}"
+    shell: "{{ ansible_env.SHELL }}"
+    group: "{{ web_user }}"
+    create_home: false
+    system: true
+    state: present

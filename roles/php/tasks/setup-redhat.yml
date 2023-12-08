@@ -1,0 +1,81 @@
+- name: Check if EPEL repo is already configured.
+  stat:
+    path: "{{ epel_repofile_path }}"
+  register: epel_repofile_result
+
+- name: Import EPEL GPG key.
+  rpm_key:
+    key: "{{ epel_repo_gpg_key_url }}"
+    state: present
+  when: not epel_repofile_result.stat.exists
+
+- name: Install EPEL repository
+  when: not epel_repofile_result.stat.exists
+  dnf:
+    name: "{{ item }}"
+  with_items:
+    - "{{ epel_release_url }}"
+    - "{{ epel_release_next_url }}"
+
+- name: Check if Remi repo is already configured.
+  stat:
+    path: "{{ remi_repofile_path }}"
+  register: remi_repofile_result
+
+- name: Import Remi GPG key
+  rpm_key:
+    key: "{{ remi_repo_gpg_key_url }}"
+    state: present
+  retries: 5
+  delay: 10
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: not remi_repofile_result.stat.exists
+
+- name: Install remi repository
+  dnf:
+    name: "{{ remi_repo_url }}"
+  when: not remi_repofile_result.stat.exists
+
+- name: Enable remi php repo
+  shell: dnf module enable php:remi-{{ php_version }} -y
+  
+- name: Update Cache
+  dnf:
+    update_cache: yes
+
+- name: "Install PHP {{ php_version }}"
+  dnf:
+    state: present
+    name:
+      - php
+      - php-cli
+      - php-fpm
+      - php-pdo
+      - php-json
+      - php-mysqlnd
+      - php-intl
+      - php-soap
+      - php-mbstring
+      - php-curl
+      - php-xml
+      - php-bcmath
+      - php-gd
+      - php-zip
+      - php-sodium
+
+- name: Create folder to run php-fpm socket
+  ansible.builtin.file:
+    path: /run/php
+    state: directory
+    mode: 0755
+
+- name: Change php-fpm pool
+  template:
+    src: www.conf.j2
+    dest: /etc/php-fpm.d/www.conf
+
+- name: Restart PHP-FPM
+  service:
+    name: php-fpm
+    state: restarted
+    enabled: yes

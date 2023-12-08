@@ -1,5 +1,8 @@
 ---
-remi_repo_url: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+epel_release_url: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+epel_release_next_url: https://dl.fedoraproject.org/pub/epel/epel-next-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+epel_repo_gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"
+epel_repofile_path: "/etc/yum.repos.d/epel.repo"
+remi_repo_url: http://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm
 remi_repo_gpg_key_url: "https://rpms.remirepo.net/enterprise/{{ ansible_distribution_major_version }}/RPM-GPG-KEY-remi"
-remi_repo_gpg_file: /etc/pki/rpm-gpg/RPM-GPG-KEY-remi.el{{ ansible_distribution_major_version }}
-remi_repo_mirrorlist: http://cdn.remirepo.net/enterprise/{{ ansible_distribution_major_version }}/modular/$basearch/mirror
+remi_repofile_path: "/etc/yum.repos.d/remi.repo"
